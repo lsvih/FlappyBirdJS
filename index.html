@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+	</head>
+	<style>
+		.main {
+			position: absolute;
+			top: 30px;
+			left: 50%;
+			margin-left: -150px;
+		}
+		
+		#start {
+			position: absolute;
+			z-index: 999;
+			top: 200px;
+			left: 150px;
+			height: 70px;
+			width: 116px;
+			margin-left: -58px;
+			background-image: url(img/button_play.png);
+		}
+		
+		#score {
+			position: absolute;
+			right: 35px;
+			top: 35px;
+			font-size: 20px;
+		}
+		
+		#gameover {
+			display: none;
+			position: absolute;
+			z-index: 999;
+			top: 100px;
+			left: 150px;
+			height: 54px;
+			width: 204px;
+			margin-left: -102px;
+			background-image: url(img/text_game_over.png);
+		}
+		
+		#scorepal {
+			display: none;
+			position: absolute;
+			z-index: 999;
+			top: 200px;
+			left: 150px;
+			height: 126px;
+			width: 238px;
+			margin-left: -119px;
+			background-image: url(img/score_panel.png);
+		}
+		
+		#startbackground {
+			position: absolute;
+			z-index: 888;
+			height: 500px;
+			width: 300px;
+			background-color: black;
+			opacity: 0.3;
+		}
+		
+		#warp {
+			position: relative;
+			border: 1px solid#000;
+			height: 500px;
+			width: 300px;
+			background-image: url(img/bg_day.png);
+		}
+		
+		#bird {
+			position: absolute;
+			height: 20px;
+			/*鸟高 */
+			width: 30px;
+			/*鸟长*/
+			top: 200px;
+			left: 50px;
+			transform: rotate(0deg);
+			-ms-transform: rotate(0deg);
+			-moz-transform: rotate(0deg);
+			-webkit-transform: rotate(0deg);
+			-o-transform: rotate(0deg);
+		}
+		
+		#pillar-up {
+			position: absolute;
+			height: 0;
+			width: 50px;
+			background-color: green;
+			top: 0;
+			right: -50px;
+			background-image: url(img/pipe_down.png);
+			background-position: bottom;
+		}
+		
+		#pillar-down {
+			position: absolute;
+			height: 0;
+			width: 50px;
+			background-color: green;
+			bottom: 0;
+			right: -50px;
+			background-image: url(img/pipe_up.png);
+			background-position: top;
+		}
+	</style>
+
+	<body style="overflow-x: hidden;">
+		<div class="main">
+			<div id="start" onclick="start()"></div>
+			<div id="gameover" onclick="start()"></div>
+			<div id="scorepal" onclick="start()">
+				<div id="score"></div>
+			</div>
+			<div id="startbackground"></div>
+			<div id="warp" onmousedown="tap()" onkeydown="tap()">
+				<div id="bird"><img src="img/bird2_0.png"></div>
+				<div id="pillar-up"></div>
+				<div id="pillar-down"></div>
+				<div id="background"></div>
+			</div>
+		</div>
+		<div id="y"></div>
+		<div id="gamestate">-1</div>
+	</body>
+
+	<script>
+		var startX = 50;
+		var startY = 200;
+		var maxTop = 480;
+		var v_y = 0;
+		var v_x = 2;
+		var g = 0.6;
+		var Bird = document.getElementById("bird");
+		var startBtn = document.getElementById("start");
+		var pillarup = document.getElementById("pillar-up");
+		var pillardown = document.getElementById("pillar-down");
+		var pillarX = -50;
+		var gamestate = -1;
+		var pillarstate = 0;
+		var scorecount = 0;
+		var score = 0;
+		function start() {
+			if (gamestate == 1) {
+				window.location.reload()
+			} else {
+				main();
+				startBtn.style.display = "none";
+				document.getElementById("startbackground").style.display = "none";
+				gamestate = 0;
+			}
+		}
+
+		function tap() {
+			v_y = -8;
+		}
+
+		function main() {
+			var birdtimer = setInterval(function() {
+					if (startY > maxTop || startY < 0) {
+						gameover();
+					}
+					if ((pillarX > 220 && pillarX < 280 && startY < pillarupH) || (pillarX > 220 && pillarX < 280 && startY > (200 + pillarupH))) {
+						gameover();
+					}
+					startY += v_y;
+					v_y += g;
+					deg = Math.atan(v_y / v_x) / 1.57 * 60;
+					Bird.style.webkitTransform = "rotate(" + deg + "deg)";
+					Bird.style.MozTransform = "rotate(" + deg + "deg)";
+					Bird.style.msTransform = "rotate(" + deg + "deg)";
+					Bird.style.OTransform = "rotate(" + deg + "deg)";
+					Bird.style.transform = "rotate(" + deg + "deg)";
+					Bird.style.top = startY + "px";
+				}, 20) //一次时间单位
+			var pillartimer = setInterval(function() {
+				if (pillarstate == 0) {
+					pillarup.style.right = "-50px";
+					pillardown.style.right = "-50px";
+					pillarupH = 300 * Math.random();
+					pillarup.style.height = pillarupH + "px";
+					pillardown.style.height = (300 - pillarupH) + "px";
+					pillarstate = 1;
+				}
+				if (pillarX >= 350) {
+					pillarX = -50;
+					pillarstate = 0;
+					scorecount = 0;
+				}
+				if (pillarX >= 250 && scorecount == 0) {
+					score++;
+					scorecount = 1;
+				}
+				pillarX += v_x;
+				pillarup.style.right = pillarX - 50 + "px";
+				pillardown.style.right = pillarX - 50 + "px";
+			}, 20)
+
+			function gameover() {
+
+				document.getElementById("startbackground").style.display = "block"
+				document.getElementById("gameover").style.display = "block"
+				document.getElementById("scorepal").style.display = "block"
+				document.getElementById("score").innerText = score;
+				gamestate = 1;
+				document.getElementById('gamestate').innerText = 1
+				clearTimeout(birdtimer);
+				clearTimeout(pillartimer);
+				clearTimeout(upload);
+			}
+			var upload = setInterval(function() {
+			document.getElementById('y').innerText = parseInt(pillarupH + 100 - startY);
+			document.getElementById('gamestate').innerText = gamestate;
+
+			}, 20)
+		}
+		document.onkeydown = function(event) {
+			if (gamestate == 1 || gamestate == -1) {
+				start()
+			}
+			tap()
+		}
+	</script>
+
+</html>
